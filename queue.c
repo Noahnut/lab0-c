@@ -25,6 +25,9 @@ queue_t *q_new()
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
+    if (q == NULL) {
+        return;
+    }
     list_ele_t *cursor = q->head;
     while (cursor) {
         list_ele_t *tmp = cursor;
@@ -44,12 +47,13 @@ void q_free(queue_t *q)
  */
 bool q_insert_head(queue_t *q, char *s)
 {
+    if (q == NULL) {
+        return false;
+    }
     list_ele_t *newh;
 
-
     newh = malloc(sizeof(list_ele_t));
-    if (q == NULL || newh == NULL) {
-        free(newh);
+    if (newh == NULL) {
         return false;
     }
     char *tmp = malloc(sizeof(char) * (strlen(s) + 1));
@@ -83,6 +87,9 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
+    if (q == NULL) {
+        return false;
+    }
     list_ele_t *newTail = NULL;
     newTail = malloc(sizeof(list_ele_t));
     if (newTail == NULL) {
@@ -174,7 +181,62 @@ void q_reverse(queue_t *q)
     return;
 }
 
+void ListSplit(list_ele_t *head, list_ele_t **left, list_ele_t **right)
+{
+    list_ele_t *fast;
+    list_ele_t *slow;
+    fast = head->next;
+    slow = head;
 
+    while (fast != NULL) {
+        fast = fast->next;
+        if (fast != NULL) {
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
+
+    *left = head;
+    *right = slow->next;
+    slow->next = NULL;
+}
+
+list_ele_t *SortMerge(list_ele_t *left, list_ele_t *right)
+{
+    list_ele_t *result;
+    if (left == NULL) {
+        return right;
+    } else if (right == NULL) {
+        return left;
+    }
+
+    if (strcasecmp(left->value, right->value) <= 0) {
+        result = left;
+        result->next = SortMerge(left->next, right);
+    } else {
+        result = right;
+        result->next = SortMerge(left, right->next);
+    }
+
+    return (result);
+}
+
+void MergeSort(list_ele_t **head)
+{
+    list_ele_t *h = *head;
+    list_ele_t *left;
+    list_ele_t *right;
+
+    if ((h == NULL || (h->next == NULL))) {
+        return;
+    }
+
+    ListSplit(h, &left, &right);
+    MergeSort(&left);
+    MergeSort(&right);
+
+    *head = SortMerge(left, right);
+}
 
 /*
  * Sort elements of queue in ascending order
@@ -188,4 +250,11 @@ void q_sort(queue_t *q)
     if (q == NULL || q->size == 0 || q->size == 1) {
         return;
     }
+
+    MergeSort(&q->head);
+    list_ele_t *iter = q->head;
+    while (iter->next != NULL) {
+        iter = iter->next;
+    }
+    q->tail = iter;
 }
