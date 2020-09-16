@@ -129,10 +129,14 @@ bool q_insert_tail(queue_t *q, char *s)
  */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
+    int stringSize = 0;
     if (q == NULL || q->size == 0 || sp == NULL || q->head == NULL) {
         return false;
     }
-    snprintf(sp, (strlen(q->head->value) + 1), "%s", q->head->value);
+
+    stringSize =
+        strlen(q->head->value) > bufsize ? bufsize : strlen(q->head->value) + 1;
+    snprintf(sp, stringSize, "%s", q->head->value);
     free(q->head->value);
     list_ele_t *tmp = q->head;
     q->head = q->head->next;
@@ -159,7 +163,7 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-    if (q == NULL || q->size == 0) {
+    if (q == NULL || q->size == 0 || q->size == 1) {
         return;
     }
     list_ele_t *iter = q->head;
