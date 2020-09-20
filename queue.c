@@ -205,24 +205,36 @@ void ListSplit(list_ele_t *head, list_ele_t **left, list_ele_t **right)
     slow->next = NULL;
 }
 
+void MoveNode(list_ele_t **dst, list_ele_t **src)
+{
+    list_ele_t *tmpNode = *src;
+    *src = tmpNode->next;
+    tmpNode->next = *dst;
+    *dst = tmpNode;
+}
+
+
 list_ele_t *SortMerge(list_ele_t *left, list_ele_t *right)
 {
-    list_ele_t *result;
-    if (left == NULL) {
-        return right;
-    } else if (right == NULL) {
-        return left;
-    }
+    list_ele_t dummyNode;
+    list_ele_t *tail = &dummyNode;
 
-    if (strcasecmp(left->value, right->value) <= 0) {
-        result = left;
-        result->next = SortMerge(left->next, right);
-    } else {
-        result = right;
-        result->next = SortMerge(left, right->next);
+    while (1) {
+        if (left == NULL) {
+            tail->next = right;
+            break;
+        } else if (right == NULL) {
+            tail->next = left;
+            break;
+        }
+        if (strcmp(left->value, right->value) < 0) {
+            MoveNode(&(tail->next), &left);
+        } else {
+            MoveNode(&(tail->next), &right);
+        }
+        tail = tail->next;
     }
-
-    return (result);
+    return (dummyNode.next);
 }
 
 void MergeSort(list_ele_t **head)
@@ -249,8 +261,6 @@ void MergeSort(list_ele_t **head)
  */
 void q_sort(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
     if (q == NULL || q->size == 0 || q->size == 1) {
         return;
     }
